@@ -1,5 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <!--
+      NOT retargeted to net10.0. Two independent blockers, either of which alone would stop
+      this today (see this task's test_report artifact for exact errors observed):
+        1. NuGetGallery.Services'/.Core's netstandard2.1 legs (the only leg a net10.0 project
+           can reference) explicitly <Compile Remove> the Authentication/Security/
+           PackageManagement/UserManagement/etc. folders this suite exercises, and neither
+           project has a net10.0 TargetFramework yet.
+        2. This suite's ~293 test files exercise Controllers/Views/App_Start composition/OData/
+           Admin surfaces of the *legacy* System.Web/MVC5 web app, almost none of which exist in
+           the net10.0 NuGetGallery.csproj (a placeholder shell with only a minimal
+           hosting/DI/OData-v1v2/partial-Admin surface ported so far).
+      Because NuGetGallery.csproj now targets net10.0 only (no net472 leg remains), this
+      project's ProjectReference to it fails to even restore (NU1201), regardless of the above.
+    -->
     <TargetFramework>net472</TargetFramework>
     <RootNamespace>NuGetGallery</RootNamespace>
   </PropertyGroup>

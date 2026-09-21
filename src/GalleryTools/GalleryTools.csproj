@@ -1,6 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <!--
+      Retargeted from net472 to net10.0 to follow NuGetGallery.csproj, which the scaffold step
+      converted from the legacy non-SDK v4.7.2 web app to an SDK-style net10.0-only project
+      (no net472 leg remains; a net472 GalleryTools cannot restore against it at all: NU1201).
+      See this task's test_report artifact for the exact remaining build errors and why they are
+      not fixable within this task's boundary today.
+    -->
+    <TargetFramework>net10.0</TargetFramework>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   <PropertyGroup>
