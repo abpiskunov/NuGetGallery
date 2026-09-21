@@ -15,6 +15,7 @@ using NuGetGallery.AsyncFileUpload;
 using NuGetGallery.Configuration;
 using NuGetGallery.Cookies;
 using NuGetGallery.Middleware;
+using NuGetGallery.OData.Core;
 
 namespace NuGetGallery
 {
@@ -94,6 +95,11 @@ namespace NuGetGallery
                 // App_Start\AutofacConfig.cs / DefaultDependenciesModule.cs as features land.
             });
 
+            // Bespoke net10 OData v1/v2 feed controllers (see OData.Core\README.md for why
+            // this is hand-rolled rather than built on Microsoft.AspNetCore.OData).
+            builder.Services.AddControllers();
+            builder.Services.AddSingleton<IPackageFeedSource, InMemorySamplePackageFeedSource>();
+
             var app = builder.Build();
 
             if (sessionOptions.Enabled)
@@ -106,6 +112,8 @@ namespace NuGetGallery
             // System.Web pipeline (BeginRequest/PostAuthenticateRequest).
             app.UseMiddleware<CookieComplianceMiddleware>();
             app.UseMiddleware<AsyncFileUploadProgressMiddleware>();
+
+            app.MapControllers();
 
             // Placeholder pipeline: proves the new SDK-style/net10.0 host builds and serves
             // requests. Real routes/controllers/views are ported in later feature-port steps.
