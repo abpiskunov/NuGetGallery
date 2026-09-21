@@ -1,41 +1,30 @@
-﻿@model SiteAdminsViewModel
+@model SiteAdminsViewModel
 @{
     ViewBag.Title = "Site Admins";
 }
 
 <section role="main" class="container main-container">
     <h2>Current Admins</h2>
-    <table class="table" aria-label="Current Admins">
+    <table aria-label="Current Admins">
         @foreach (var adminUsername in Model.AdminUsernames)
         {
             <tr>
-                @using (Html.BeginForm("RemoveAdmin", "SiteAdmins"))
-                {
-                    <th>
-                        <a href="@Url.User(adminUsername)"
-                           title="View profile of @adminUsername">
-                            @adminUsername
-                        </a>
-                    </th>
-                    <th>
+                <td>@adminUsername</td>
+                <td>
+                    <form asp-area="Admin" asp-controller="SiteAdmins" asp-action="RemoveAdmin" method="post">
                         @Html.AntiForgeryToken()
-                        @Html.Hidden("username", adminUsername)
-                        <button class="btn-link">
-                            <span>Remove</span>
-                        </button>
-                    </th>
-                }
+                        <input type="hidden" name="username" value="@adminUsername" />
+                        <button type="submit">Remove</button>
+                    </form>
+                </td>
             </tr>
         }
     </table>
 
     <h2>Add Admin</h2>
-    @using (Html.BeginForm("AddAdmin", "SiteAdmins"))
-    {
+    <form asp-area="Admin" asp-controller="SiteAdmins" asp-action="AddAdmin" method="post">
         @Html.AntiForgeryToken()
-        <div class="row-checkbox-label">
-            <input type="text" class="form-control input-brand" name="username" />
-            <button type="submit" class="btn btn-brand">Add</button>
-        </div>
-    }
+        <input type="text" name="username" />
+        <button type="submit">Add</button>
+    </form>
 </section>

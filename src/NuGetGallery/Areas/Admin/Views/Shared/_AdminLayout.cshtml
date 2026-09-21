@@ -1,0 +1,27 @@
+@{
+    // Minimal, standalone layout for the ASP.NET Core (net10.0) rebuild of the Admin area.
+    // Intentionally does NOT reuse the legacy ~/Views/Shared/gallery/Layout.cshtml (bundling via
+    // WebGrease/Microsoft.AspNet.Web.Optimization, main-site chrome) -- that is owned by the
+    // sibling "Replace packages with no ASP.NET Core equivalent" task and the eventual full
+    // site-wide MVC port. This layout exists so the Admin area is independently
+    // buildable/testable during the migration and should be merged into the real site layout
+    // once that lands.
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title - NuGet Gallery Admin</title>
+</head>
+<body>
+    <header>
+        <h1>NuGet Gallery — Admin (net10 rebuild, in progress)</h1>
+        <nav>
+            <a asp-area="Admin" asp-controller="Home" asp-action="Index">Admin Home</a>
+        </nav>
+    </header>
+    <main>
+        @RenderBody()
+    </main>
+</body>
+</html>
