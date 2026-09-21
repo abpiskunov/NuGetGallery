@@ -82,3 +82,16 @@ These are real, separable pieces of remaining work; a from-scratch OData v1/v2 q
 reimplementation is estimated at several additional work sessions beyond this one, once real
 data access (`Package`/search) is wired into the net10 app. See this task's `test_report`
 artifact for the honest assessment of what was verified vs. not.
+
+## Automated test coverage
+
+`tests\NuGetGallery.OData.Facts` (net10.0, `Microsoft.AspNetCore.Mvc.Testing`) exercises the
+controllers above end-to-end (in-memory `WebApplicationFactory<Program>` + real HTTP calls),
+asserting the same kind of wire-format contract (route shapes, atom+xml element/namespace
+structure, `m:properties`/`d:*` element presence including `d:Id`) that the legacy
+`tests\NuGetGallery.Facts\Controllers\ODataV{1,2}FeedControllerFacts.cs` asserted against the
+old `System.Web.Http.OData` controllers. It exists as a separate, net10.0-targeted project
+because `NuGetGallery.Facts` itself is net472-only and cannot restore/build against this
+net10.0-only `NuGetGallery.csproj` (see this workitem's memory note on that NU1201 blocker).
+It intentionally only covers the endpoints/behavior listed as implemented above (placeholder
+`InMemorySamplePackageFeedSource` data, no `$filter`/`$orderby`/search/etc.).

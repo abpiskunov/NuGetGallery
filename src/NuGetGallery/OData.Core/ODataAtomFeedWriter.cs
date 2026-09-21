@@ -115,6 +115,7 @@ namespace NuGetGallery.OData.Core
 
             return new XElement(
                 Metadata + "properties",
+                Prop("Id", package.Id),
                 Prop("Version", package.Version),
                 Prop("NormalizedVersion", package.NormalizedVersion),
                 Prop("Authors", package.Authors),
