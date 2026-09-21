@@ -34,6 +34,20 @@
 
   <ItemGroup>
     <Compile Include="Program.cs" />
+
+    <!--
+      Bespoke net10 reimplementation of the legacy OData v1/v2 package feeds. Hand-rolled
+      (not built on Microsoft.AspNetCore.OData) because this work item's spike (parent step 0,
+      decision D3) found that library cannot serve the legacy v1/v2 atom+xml wire format at
+      all. See OData.Core\README.md for what is and is not covered.
+    -->
+    <Compile Include="OData.Core\V1FeedPackage.cs" />
+    <Compile Include="OData.Core\V2FeedPackage.cs" />
+    <Compile Include="OData.Core\IPackageFeedSource.cs" />
+    <Compile Include="OData.Core\ODataAtomFeedWriter.cs" />
+    <Compile Include="OData.Core\ODataMetadataDocument.cs" />
+    <Compile Include="Controllers.Core\ODataV1FeedController.cs" />
+    <Compile Include="Controllers.Core\ODataV2FeedController.cs" />
   </ItemGroup>
 
   <ItemGroup>

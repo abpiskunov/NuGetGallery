@@ -5,7 +5,9 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NuGetGallery.OData.Core;
 
 namespace NuGetGallery
 {
@@ -35,7 +37,14 @@ namespace NuGetGallery
                 // App_Start\AutofacConfig.cs / DefaultDependenciesModule.cs as features land.
             });
 
+            // Bespoke net10 OData v1/v2 feed controllers (see OData.Core\README.md for why
+            // this is hand-rolled rather than built on Microsoft.AspNetCore.OData).
+            builder.Services.AddControllers();
+            builder.Services.AddSingleton<IPackageFeedSource, InMemorySamplePackageFeedSource>();
+
             var app = builder.Build();
+
+            app.MapControllers();
 
             // Placeholder pipeline: proves the new SDK-style/net10.0 host builds and serves
             // requests. Real routes/controllers/views are ported in later feature-port steps.
