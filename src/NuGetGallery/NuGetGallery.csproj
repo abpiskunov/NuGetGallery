@@ -34,11 +34,27 @@
 
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="Configuration\CrossCuttingOptions.cs" />
+    <Compile Include="Cookies\ICookieComplianceService.cs" />
+    <Compile Include="Middleware\CookieComplianceMiddleware.cs" />
+    <Compile Include="AsyncFileUpload\AsyncFileUploadProgress.cs" />
+    <Compile Include="AsyncFileUpload\IUploadProgressCacheService.cs" />
+    <Compile Include="AsyncFileUpload\MemoryUploadProgressCacheService.cs" />
+    <Compile Include="AsyncFileUpload\UploadTracingKeyHelper.cs" />
+    <Compile Include="AsyncFileUpload\RegexEx.cs" />
+    <Compile Include="AsyncFileUpload\AsyncFileUploadRequestParser.cs" />
+    <Compile Include="AsyncFileUpload\AsyncFileUploadProgressMiddleware.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Autofac" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
   </ItemGroup>
 
 </Project>
