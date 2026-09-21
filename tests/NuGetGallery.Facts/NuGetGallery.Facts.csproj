@@ -1,5 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <!--
+      NuGetGallery.Facts is NOT retargeted to net10.0 here (unlike GalleryTools). Doing so is
+      blocked on two fronts, not one:
+        1. Same missing-net10-TFM chain as GalleryTools (NuGetGallery.Services/.Core/
+           NuGet.Services.Configuration/.Logging have no net10.0 leg yet, and their
+           netstandard2.1 legs exclude the Authentication/Security/PackageManagement/
+           UserManagement/etc. folders this suite exercises).
+        2. Far more severely: this suite's ~293 test files exercise Controllers, Views,
+           App_Start composition, and OData/Admin surfaces of the *legacy* System.Web/MVC5 web
+           app almost none of which exist in the net10.0 NuGetGallery.csproj (a placeholder
+           shell with only a minimal hosting/DI/OData-v1v2/partial-Admin surface ported so far;
+           see NuGetGallery.csproj's own top-of-file comment). Getting real coverage back
+           requires the corresponding controllers/views to be ported first, which is a much
+           larger, separate body of work than this task's scope.
+      A prior investigation on this task independently reached the same conclusion (see
+      "NuGetGallery.Core.Facts and NuGetGallery.Facts cannot get net10.0 (documented)" in this
+      work item's memory) before the scaffold/OData/Admin work below even existed; that
+      conclusion still holds today for different/additional reasons. TargetFramework stays
+      net472, so this project (like NuGetGallery.Core.Facts) currently fails to even restore,
+      because NuGetGallery.csproj itself has no net472 leg left -- see this task's test_report
+      artifact for the exact error.
+    -->
     <TargetFramework>net472</TargetFramework>
     <RootNamespace>NuGetGallery</RootNamespace>
   </PropertyGroup>
