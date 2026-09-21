@@ -1,13 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net472;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.1;net10.0</TargetFrameworks>
     <PackageVersion Condition="'$(PackageVersion)' == ''">$(JobsPackageVersion)</PackageVersion>
     <Description>Create, edit, or read the package metadata catalog.</Description>
     <PackageTags>nuget;services;search;catalog;metadata;collector</PackageTags>
   </PropertyGroup>
   
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+  <!--
+  These files depend on dotNetRDF / NuGet.StrongName.json-ld.net, which are only referenced under
+  net472 (see the net472-only PackageReference ItemGroup below). Neither package currently ships a
+  netstandard2.0+/net10.0-compatible build, so RDF/JSON-LD catalog-writing is unimplemented outside
+  net472. This is a deliberate, documented functional gap (see this project's decision write-up),
+  not an oversight: net10.0 consumers of this library do not get catalog-writing/JSON-LD support,
+  the same as netstandard2.1 consumers today.
+  -->
+  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <Compile Remove="AppendOnlyCatalogItem.cs" />
     <Compile Remove="AppendOnlyCatalogWriter.cs" />
     <Compile Remove="CatalogItem.cs" />
