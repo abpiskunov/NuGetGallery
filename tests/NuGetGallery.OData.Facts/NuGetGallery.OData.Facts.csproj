@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Automated integration test coverage for the bespoke net10 OData v1/v2 feed controllers
+    (src\NuGetGallery\Controllers.Core\ODataV{1,2}FeedController.cs), using
+    Microsoft.AspNetCore.Mvc.Testing's WebApplicationFactory<Program> to boot the real
+    net10.0 NuGetGallery host in-memory and exercise it over HTTP.
+
+    This project exists because the legacy tests/NuGetGallery.Facts/Controllers/
+    ODataV{1,2}FeedControllerFacts.cs only test the excluded legacy System.Web.Http.OData
+    controllers, and NuGetGallery.Facts itself is net472-only and cannot restore/build against
+    NuGetGallery.csproj now that the latter targets net10.0-only (documented NU1201 blocker,
+    see workitem memory "Retargeting NuGetGallery.csproj to net10.0-only breaks net472
+    dependents"). Rather than leave the new controllers with zero automated coverage, this
+    project targets net10.0 directly and asserts on the same wire-format contract (route
+    shapes, atom+xml element/namespace structure) that the legacy Facts asserted against the
+    old controllers, using the response bodies produced by InMemorySamplePackageFeedSource
+    (see OData.Core/README.md for why real Package/database data access is out of scope here).
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>NuGetGallery.OData.Facts</RootNamespace>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\NuGetGallery\NuGetGallery.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
