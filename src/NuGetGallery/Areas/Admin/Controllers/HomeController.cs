@@ -1,48 +1,38 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Web.Mvc;
+// Rebuilt for ASP.NET Core (net10.0). See AdminControllerBase.cs for the D2 (Dynamic Data)
+// decision and the current auth-wiring caveat.
+//
+// Narrowed from the legacy version: IContentService/IGalleryConfigurationService (content-cache
+// clearing, config-driven nav flags) are not ported yet, so "Clear Content Cache" and the
+// config-gated nav flags (Lucene/Validation) are dropped for now -- the nav always shows those
+// links so the page is at least navigable once their controllers land. The
+// AdminPanelDatabaseAccessEnabled-gated "Database Admin" link is intentionally omitted entirely,
+// per the D2 decision to drop the Dynamic Data admin surface rather than rebuild it.
+
+using Microsoft.AspNetCore.Mvc;
 using NuGetGallery.Areas.Admin.ViewModels;
-using NuGetGallery.Configuration;
 
 namespace NuGetGallery.Areas.Admin.Controllers
 {
-    public partial class HomeController : AdminControllerBase
+    public class HomeController : AdminControllerBase
     {
-        private readonly IContentService _content;
-        private readonly IGalleryConfigurationService _config;
-
-        public HomeController(IContentService content, IGalleryConfigurationService config)
-        {
-            _content = content ?? throw new ArgumentNullException(nameof(content));
-            _config = config ?? throw new ArgumentNullException(nameof(config));
-        }
-
         [HttpGet]
-        public virtual ActionResult Index()
+        public IActionResult Index()
         {
             var viewModel = new HomeViewModel(
-                showDatabaseAdmin: _config.Current.AdminPanelDatabaseAccessEnabled,
-                showLuceneAdmin: _config.Current.SearchServiceUriPrimary == null && _config.Current.SearchServiceUriSecondary == null,
-                showValidation: _config.Current.AsynchronousPackageValidationEnabled);
+                showDatabaseAdmin: false,
+                showLuceneAdmin: true,
+                showValidation: true);
 
             return View(viewModel);
         }
 
         [HttpGet]
-        public virtual ActionResult Throw()
+        public IActionResult Throw()
         {
-            throw new Exception("KA BOOM!");
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public virtual ActionResult ClearContentCache()
-        {
-            _content.ClearCache();
-            TempData["Message"] = "Cleared Content Cache";
-            return RedirectToAction("Index");
+            throw new System.Exception("KA BOOM!");
         }
     }
 }
