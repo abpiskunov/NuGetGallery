@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
@@ -29,6 +30,14 @@ namespace NuGetGallery
     /// OData feeds, and the Dynamic Data admin UI have not been ported yet -- see the legacy
     /// files retained (but excluded from compilation) elsewhere in this project -- and are
     /// expected to be wired in incrementally by follow-on feature-port steps.
+    ///
+    /// The Areas/Admin MVC surface (rebuilt to replace ASP.NET Dynamic Data, see
+    /// Areas/Admin/Controllers/AdminControllerBase.cs for the D2 decision) is now wired up via
+    /// AddControllersWithViews()/MapControllerRoute(areaName: "Admin"), but the real Autofac
+    /// composition root (EntitiesContext/repositories/config/etc.) is NOT wired yet -- routes
+    /// resolve, views render, but any controller that needs a real service (e.g.
+    /// SiteAdminsController's IUserService) will fail at request time until that composition
+    /// root lands. See this task's test_report artifact for what was and wasn't verified.
     /// </summary>
     public class Program
     {
@@ -97,8 +106,23 @@ namespace NuGetGallery
 
             // Bespoke net10 OData v1/v2 feed controllers (see OData.Core\README.md for why
             // this is hand-rolled rather than built on Microsoft.AspNetCore.OData).
-            builder.Services.AddControllers();
             builder.Services.AddSingleton<IPackageFeedSource, InMemorySamplePackageFeedSource>();
+
+            builder.Services.AddControllersWithViews();
+            builder.Services.AddAuthorization();
+
+            // Placeholder cookie-authentication scheme so [Authorize(Roles = "Admins")] (on
+            // AdminControllerBase) produces a well-formed 302 challenge to a not-yet-existing
+            // login path instead of crashing with "no DefaultChallengeScheme found". Porting the
+            // real authentication story (the gallery's actual login/claims/cookie machinery,
+            // machineKey/GalleryMachineKeyConfigurationProvider, etc.) is the sibling "Port
+            // Web.config cross-cutting concerns" task's job, not this one's.
+            builder.Services
+                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+                {
+                    options.LoginPath = "/users/account/signin";
+                });
 
             var app = builder.Build();
 
@@ -113,7 +137,17 @@ namespace NuGetGallery
             app.UseMiddleware<CookieComplianceMiddleware>();
             app.UseMiddleware<AsyncFileUploadProgressMiddleware>();
 
+            app.UseStaticFiles();
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
+
             app.MapControllers();
+
+            app.MapControllerRoute(
+                name: "admin_area",
+                pattern: "Admin/{controller=Home}/{action=Index}/{id?}",
+                defaults: new { area = "Admin" });
 
             // Placeholder pipeline: proves the new SDK-style/net10.0 host builds and serves
             // requests. Real routes/controllers/views are ported in later feature-port steps.

@@ -1,5 +1,9 @@
 ﻿@{
-    Layout = File.Exists(Server.MapPath("~/Branding/Views/Shared/Layout.cshtml"))
-        ? "~/Branding/Views/Shared/Layout.cshtml"
-        : "~/Views/Shared/gallery/Layout.cshtml";
+    // Rebuilt for ASP.NET Core (net10.0): the legacy layout resolution (Branding override vs.
+    // ~/Views/Shared/gallery/Layout.cshtml) depended on Server.MapPath and the still-unported
+    // main site chrome/bundling pipeline (Areas/Admin's parent "Replace packages with no
+    // ASP.NET Core equivalent" sibling task owns WebGrease/Optimization replacement). Until that
+    // lands, the Admin area uses its own minimal layout so this area can be built/tested in
+    // isolation.
+    Layout = "_AdminLayout";
 }

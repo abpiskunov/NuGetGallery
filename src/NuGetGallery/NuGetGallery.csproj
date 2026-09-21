@@ -63,12 +63,54 @@
     <Compile Include="OData.Core\ODataMetadataDocument.cs" />
     <Compile Include="Controllers.Core\ODataV1FeedController.cs" />
     <Compile Include="Controllers.Core\ODataV2FeedController.cs" />
+    <Compile Include="Areas\Admin\Controllers\AdminControllerBase.cs" />
+    <Compile Include="Areas\Admin\Controllers\HomeController.cs" />
+    <Compile Include="Areas\Admin\ViewModels\HomeViewModel.cs" />
+    <!--
+      SiteAdminsController.cs has been rewritten for ASP.NET Core (compiles fine on its own
+      syntax) but is deliberately NOT included in this build: it depends on IUserService, and
+      NuGetGallery.Services/UserManagement/*.cs is entirely excluded from that project's
+      netstandard2.1 leg (see NuGetGallery.Services.csproj's netstandard2.1 Compile-Remove
+      list), which is the only leg a net10.0 app can reference today (no net10.0 TargetFramework
+      exists on NuGetGallery.Services yet - that is the sibling "Shared class libraries:
+      add/verify net10 target" stage, still in progress). Re-add this Compile/Content pair once
+      that stage adds net10.0 (or at least un-excludes UserManagement from netstandard2.1).
+      Compile Include="Areas\Admin\Controllers\SiteAdminsController.cs"
+      Compile Include="Areas\Admin\ViewModels\SiteAdminsViewModel.cs"
+    -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Razor views for the (partially) rebuilt Areas/Admin surface. Only the views for the
+      controllers actually ported above are included; the rest of Areas/Admin/Views/** remains
+      on disk (legacy MVC5 Razor, System.Web.Mvc HtmlHelpers) but is not built.
+    -->
+    <Content Include="Areas\Admin\Views\_ViewImports.cshtml" />
+    <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\_AdminLayout.cshtml" />
+    <Content Include="Areas\Admin\Views\Home\Index.cshtml" />
+    <!-- SiteAdmins/Index.cshtml is not included for the same reason SiteAdminsController.cs
+         above is excluded: its controller can't compile against net10 yet. -->
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Autofac" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      NuGetGallery.Core and NuGetGallery.Services do not have a net10.0 TargetFramework yet
+      (tracked separately by the "Shared class libraries: add/verify net10 target" stage), but
+      both build cleanly for their netstandard2.1 leg, which this net10.0 app can reference
+      directly. Kept as forward-looking infrastructure for future Admin controllers whose
+      dependencies do live in that leg; note that IUserService/IPackageService and most other
+      substantive business services currently do NOT (see the comment above).
+    -->
+    <ProjectReference Include="..\NuGetGallery.Core\NuGetGallery.Core.csproj" />
+    <ProjectReference Include="..\NuGetGallery.Services\NuGetGallery.Services.csproj" />
   </ItemGroup>
 
 </Project>
