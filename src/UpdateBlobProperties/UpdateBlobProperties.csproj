@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>Exe</OutputType>
+    <WebJobType>Triggered</WebJobType>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Services.Cursor\NuGet.Services.Cursor.csproj" />

@@ -61,4 +61,7 @@
   </PropertyGroup>
   <Import Project="$(NuGetBuildExtensions)" Condition="'$(UseNuGetBuildExtensions)' == 'true' And '$(NuGetBuildExtensions)' != '' And Exists('$(NuGetBuildExtensions)')" />
 
+  <!-- WebJob packaging: opt in with WebJobType in the job project. -->
+  <Import Project="$(MSBuildThisFileDirectory)build\WebJob.targets" Condition="'$(WebJobType)' != ''" />
+
 </Project>

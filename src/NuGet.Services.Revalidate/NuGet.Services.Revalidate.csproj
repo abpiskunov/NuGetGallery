@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>Exe</OutputType>
+    <WebJobType>Triggered</WebJobType>
   </PropertyGroup>
   <PropertyGroup>
     <Description>The job that revalidates previously updated packages</Description>
