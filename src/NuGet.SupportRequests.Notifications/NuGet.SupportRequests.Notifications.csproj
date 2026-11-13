@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>Exe</OutputType>
+    <WebJobType>Continuous</WebJobType>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="Images.Designer.cs">

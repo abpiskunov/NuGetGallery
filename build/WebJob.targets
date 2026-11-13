@@ -1,0 +1,51 @@
+<Project>
+
+  <!--
+    Packages a net472 JobRunner job as an Azure App Service (Windows) WebJob zip.
+    Opt in from the job project: <WebJobType>Continuous</WebJobType> (JobRunner.Run) or Triggered (JobRunner.RunOnce).
+    Optional: <WebJobSchedule> (NCRONTAB, Triggered only).
+    Build: msbuild <job>.csproj -t:PackageWebJob -p:Configuration=Release -restore
+    Output: bin\webjob\<project>.zip, with run.cmd and settings.job at the zip root.
+    The generated run.cmd always enables the duplicate-execution guard (see JobGuard) and fails closed when
+    the JOB_GUARD_STORAGE app setting is missing. Job arguments come from the JOB_ARGS app setting.
+  -->
+  <PropertyGroup>
+    <WebJobStageDir>$(MSBuildProjectDirectory)\obj\webjob\$(Configuration)\stage\</WebJobStageDir>
+    <WebJobZipPath>$(MSBuildProjectDirectory)\bin\webjob\$(MSBuildProjectName).zip</WebJobZipPath>
+  </PropertyGroup>
+
+  <Target Name="PackageWebJob" DependsOnTargets="Build">
+    <Error Condition="'$(WebJobType)' != 'Continuous' And '$(WebJobType)' != 'Triggered'"
+           Text="WebJobType must be Continuous or Triggered for $(MSBuildProjectName)." />
+    <Error Condition="'$(WebJobSchedule)' != '' And '$(WebJobType)' != 'Triggered'"
+           Text="WebJobSchedule applies to Triggered WebJobs only." />
+
+    <ItemGroup>
+      <_WebJobFile Include="$(OutDir)**\*" Exclude="$(OutDir)**\*.pdb;$(OutDir)**\*.xml;$(OutDir)webjob\**" />
+      <_WebJobRunLine Include="@echo off" />
+      <_WebJobRunLine Include="if &quot;%25JOB_GUARD_STORAGE%25&quot;==&quot;&quot; (" />
+      <_WebJobRunLine Include="  echo JOB_GUARD_STORAGE app setting is required to prevent duplicate execution. 1>&amp;2" />
+      <_WebJobRunLine Include="  exit /b 1" />
+      <_WebJobRunLine Include=")" />
+      <_WebJobRunLine Include="&quot;%25~dp0$(TargetFileName)&quot; %25JOB_ARGS%25 -JobGuardStorageConnectionString &quot;%25JOB_GUARD_STORAGE%25&quot;" />
+      <_WebJobRunLine Include="exit /b %25ERRORLEVEL%25" />
+
+      <_WebJobSettingsLine Include="{" />
+      <_WebJobSettingsLine Condition="'$(WebJobType)' == 'Continuous'" Include="  &quot;is_singleton&quot;: true" />
+      <_WebJobSettingsLine Condition="'$(WebJobType)' == 'Triggered' And '$(WebJobSchedule)' != ''" Include="  &quot;schedule&quot;: &quot;$(WebJobSchedule)&quot;" />
+      <_WebJobSettingsLine Include="}" />
+    </ItemGroup>
+
+    <RemoveDir Directories="$(WebJobStageDir)" />
+    <MakeDir Directories="$(WebJobStageDir)" />
+    <Copy SourceFiles="@(_WebJobFile)" DestinationFiles="@(_WebJobFile->'$(WebJobStageDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+    <WriteLinesToFile File="$(WebJobStageDir)run.cmd" Lines="@(_WebJobRunLine)" Overwrite="true" />
+    <WriteLinesToFile File="$(WebJobStageDir)settings.job" Lines="@(_WebJobSettingsLine)" Overwrite="true" />
+
+    <Delete Files="$(WebJobZipPath)" />
+    <MakeDir Directories="$(MSBuildProjectDirectory)\bin\webjob" />
+    <ZipDirectory SourceDirectory="$(WebJobStageDir)" DestinationFile="$(WebJobZipPath)" />
+    <Message Importance="high" Text="WebJob ($(WebJobType)) packaged: $(WebJobZipPath)" />
+  </Target>
+
+</Project>
