@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>Exe</OutputType>
+    <WebJobType>Continuous</WebJobType>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\GitHubVulnerabilities2Db\GitHubVulnerabilities2Db.csproj" />

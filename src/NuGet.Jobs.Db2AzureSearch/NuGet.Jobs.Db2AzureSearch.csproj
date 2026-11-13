@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>Exe</OutputType>
+    <WebJobType>Triggered</WebJobType>
     <RootNamespace>NuGet.Jobs</RootNamespace>
   </PropertyGroup>
   <ItemGroup>

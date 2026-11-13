@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>Exe</OutputType>
+    <WebJobType>Continuous</WebJobType>
     <RootNamespace>NuGet.Services.PackageHash</RootNamespace>
     <AssemblyName>NuGet.Services.PackageHash</AssemblyName>
   </PropertyGroup>
