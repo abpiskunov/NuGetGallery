@@ -7,11 +7,14 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights.Extensibility.Implementation.ApplicationId;
 using Microsoft.Extensions.Logging;
 using NuGet.Services.Logging;
+using NuGetGallery.Infrastructure.JobCoordination;
 
 namespace NuGet.Jobs
 {
@@ -240,7 +243,9 @@ namespace NuGet.Jobs
 
             int exitCode = 0;
 
-            // This tells Application Insights that, even though a heartbeat is reported, 
+            var guard = CreateGuard(jobArgsDictionary);
+
+            // This tells Application Insights that, even though a heartbeat is reported,
             // the state of the application is unhealthy when the exitcode is different from zero.
             // The heartbeat metadata is enriched with the job loop exit code.
             _applicationInsightsConfiguration.DiagnosticsTelemetryModule?.AddOrSetHeartbeatProperty(
@@ -259,18 +264,53 @@ namespace NuGet.Jobs
 
                 try
                 {
-                    if (ShouldInitialize(reinitializeAfterSeconds, timeSinceInitialization))
+                    async Task InitAndRunAsync()
                     {
-                        job.Init(ServiceContainer, jobArgsDictionary);
-                        timeSinceInitialization = Stopwatch.StartNew();
+                        if (ShouldInitialize(reinitializeAfterSeconds, timeSinceInitialization))
+                        {
+                            job.Init(ServiceContainer, jobArgsDictionary);
+                            timeSinceInitialization = Stopwatch.StartNew();
+                        }
+
+                        initialized = true;
+
+                        await job.Run();
                     }
 
-                    initialized = true;
-
-                    await job.Run();
-
-                    exitCode = 0;
-                    _logger.LogInformation(JobSucceeded);
+                    if (guard == null)
+                    {
+                        await InitAndRunAsync();
+                        exitCode = 0;
+                        _logger.LogInformation(JobSucceeded);
+                    }
+                    else
+                    {
+                        var jobName = job.GetType().Assembly.GetName().Name;
+                        var result = await guard.RunAsync(jobName, (occurrence, token) => InitAndRunAsync(), CancellationToken.None);
+                        switch (result.Outcome)
+                        {
+                            case JobGuardOutcome.Completed:
+                                exitCode = 0;
+                                _logger.LogInformation(JobSucceeded);
+                                break;
+                            case JobGuardOutcome.NotClaimed:
+                                exitCode = 0;
+                                _logger.LogInformation("Job is not due or is running on another host. Skipping this run.");
+                                break;
+                            case JobGuardOutcome.StoreUnavailable:
+                                exitCode = 1;
+                                _logger.LogError(result.Exception, "Job guard store is unavailable. Not running the job.");
+                                break;
+                            case JobGuardOutcome.Failed:
+                                exitCode = 1;
+                                _logger.LogError(result.Exception, "{JobState}: {Exception}", initialized ? JobFailed : JobUninitialized, result.Exception);
+                                break;
+                            default:
+                                exitCode = 1;
+                                _logger.LogError("Job guard claim was lost or could not be recorded for occurrence {DueUtc}.", result.Occurrence?.DueUtc);
+                                break;
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
@@ -303,6 +343,28 @@ namespace NuGet.Jobs
             }
 
             return exitCode;
+        }
+
+        /// <summary>
+        /// Returns a guard backed by the shared blob lease store, or null when no guard storage is configured.
+        /// The same job name and store must be used by every host that can run the job.
+        /// </summary>
+        internal static JobGuard CreateGuard(IDictionary<string, string> jobArgsDictionary)
+        {
+            var connectionString = JobConfigurationManager.TryGetArgument(jobArgsDictionary, JobArgumentNames.JobGuardStorageConnectionString);
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                return null;
+            }
+
+            var containerName = JobConfigurationManager.TryGetArgument(jobArgsDictionary, JobArgumentNames.JobGuardContainer) ?? "job-guard";
+            var leaseSeconds = JobConfigurationManager.TryGetIntArgument(jobArgsDictionary, JobArgumentNames.JobGuardLeaseSeconds) ?? 60;
+            var retrySeconds = JobConfigurationManager.TryGetIntArgument(jobArgsDictionary, JobArgumentNames.JobGuardRetrySeconds) ?? 60;
+
+            var store = new BlobJobScheduleStore(
+                new BlobContainerClient(connectionString, containerName),
+                TimeSpan.FromSeconds(leaseSeconds));
+            return new JobGuard(store, TimeSpan.FromSeconds(retrySeconds));
         }
 
         private static bool ShouldInitialize(int? reinitializeAfterSeconds, Stopwatch timeSinceInitialization)
