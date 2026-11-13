@@ -19,6 +19,20 @@ env:
   DOTNET_NOLOGO: true
 
 jobs:
+  migration-additive-check:
+    name: Shared DB additive-only migration check
+    runs-on: windows-2025-vs2026
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Self-test and check migrations
+        shell: pwsh
+        run: |
+          .\tests\Scripts\Test-AdditiveOnlyMigrations.Tests.ps1
+          .\build\Test-AdditiveOnlyMigrations.ps1
+
   common:
     name: NuGet.Server.Common build and test
     runs-on: windows-2025-vs2026
