@@ -19,6 +19,12 @@ namespace NuGet.Jobs
 
         public const string WhatIf = "WhatIf";
 
+        // Duplicate-execution guard (shared blob lease). Enabled when the connection string is provided.
+        public const string JobGuardStorageConnectionString = "JobGuardStorageConnectionString";
+        public const string JobGuardContainer = "JobGuardContainer";
+        public const string JobGuardLeaseSeconds = "JobGuardLeaseSeconds";
+        public const string JobGuardRetrySeconds = "JobGuardRetrySeconds";
+
         // Database argument names
         public const string SourceDatabase = "SourceDatabase";
         public const string DestinationDatabase = "DestinationDatabase";
