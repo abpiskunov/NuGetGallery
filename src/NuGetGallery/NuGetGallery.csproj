@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <MSBuildWarningsAsErrors>MSB3247</MSBuildWarningsAsErrors>
     <CodeContractsAssemblyMode>0</CodeContractsAssemblyMode>
@@ -69,6 +69,8 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Areas\Admin\DynamicData\FieldTemplates\Url_Edit.ascx.cs">
