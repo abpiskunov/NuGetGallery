@@ -15,4 +15,8 @@ Notes
 
 Validation (2026-11-18)
 - Scans confirm no packages.config; all projects SDK-style; no per-project PackageReference versions.
-- msbuild build of NuGetGallery.sln succeeded.
+- Build: msbuild NuGetGallery.sln /restore succeeded.
+- Tests: dotnet test --no-build exited 1 due to:
+  - NuGet.Services.DatabaseMigration.Facts: 2 failures (LocalDB missing; SqlException provider: SQL Network Interfaces, error: 52).
+  - NuGetGallery.App_Start.DefaultDependenciesModuleFacts: 4 failures (ApplicationInsights assertions: telemetry initializers, default sink, ApplicationIdProvider).
+- Environment blockers: SQL Server LocalDB not installed; base commit on this runner also lacks Microsoft.WebApplication.targets (VS ASP.NET workloads).
