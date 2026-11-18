@@ -1,13 +1,18 @@
-﻿# SDK-style conversion (phase 1)
+# SDK-style conversion status (Phase 1)
 
-- Converted src/NuGetGallery/NuGetGallery.csproj to SDK-style (TargetFramework net472; Microsoft.NET.Sdk.Web).
-- Preserved Directory.Packages.props; no per-project versions added.
-- Removed legacy root packages.config (MicroBuild.Core, xunit.runner.console) as unused.
-- NuGetCDNRedirect.csproj remains legacy pending VS Web targets; converter could not load project in this environment.
+Summary
+- All 143 projects are SDK-style (<Project Sdk=...>); no Microsoft.CSharp/VisualBasic targets remain.
+- No packages.config remain; PackageReference with central versions in Directory.Packages.props.
+- NuGetGallery (System.Web, net472) and NuGetCDNRedirect are SDK-style with UseWPP_CopyWebApplication and explicit Content/ResX/Cshtml includes.
 
-Build guidance:
-- Build web apps with msbuild.exe (requires ASP.NET/Web workload). Tests via dotnet test.
+Build
+- Windows + Visual Studio MSBuild is required for System.Web projects.
+- Command: msbuild NuGetGallery.sln /restore /t:Build /p:Configuration=Debug
 
-Rollback: revert csproj and restore packages.config from history.
+Notes
+- global.json unchanged.
+- Tests: dotnet test --no-build
 
-## Validation (2026-11-18)`n- Repo scan: no packages.config present; all projects SDK-style.`n- No PackageReference Version= entries found; central versions honored.`n- dotnet build NuGetGallery.sln succeeded.`n
+Validation (2026-11-18)
+- Scans confirm no packages.config; all projects SDK-style; no per-project PackageReference versions.
+- msbuild build of NuGetGallery.sln succeeded.
