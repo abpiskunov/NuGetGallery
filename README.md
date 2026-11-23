@@ -33,6 +33,24 @@ Let's focus on running the gallery web app locally, first.
 
 Refer to [our documentation](./docs/) for information on how to develop the frontend, use AAD, and more.
 
+### Run unit tests locally
+
+Prerequisites: Windows with Visual Studio 2022 (includes MSBuild, .NET Framework 4.7.2 targeting pack, and LocalDB). Many tests target net472; running on Linux/macOS is not supported.
+
+Command line (from repo root):
+- Web app and libraries: `dotnet test NuGetGallery.sln`
+- Background jobs: `dotnet test NuGet.Jobs.sln`
+
+Note: Functional tests are in the `*.FunctionalTests.sln` solutions and are not required for unit tests.
+
+Run a subset:
+- One project: `dotnet test tests/NuGet.Services.Entities.Tests/NuGet.Services.Entities.Tests.csproj`
+- Name filter: `dotnet test NuGetGallery.sln --filter "FullyQualifiedName~Entities"`
+
+IDE (Visual Studio): open `NuGetGallery.sln` (or `NuGet.Jobs.sln`), build, then Test Explorer → Run All Tests.
+
+Success: CLI shows `Passed! … 0 failed` or all tests are green in Test Explorer.
+
 ### Shared libraries
 
 There are a set of shared libraries used across the NuGet server repositories, including:
