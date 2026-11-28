@@ -18,6 +18,11 @@ Visual Studio 2019 may work but Visual Studio 2022 is recommended.
 
 The "Azure development" workload installs SQL Server Express LocalDB which is the database configured for local development.
 
+### Quick build
+`msbuild NuGetGallery.sln -t:Restore`
+`msbuild NuGetGallery.sln -t:Build -p:Configuration=Debug`
+The build should complete successfully with no errors.
+
 ### Run the gallery website locally
 
 This repository contains both the gallery web app (what runs www.nuget.org) as well as background jobs and shared libraries.
